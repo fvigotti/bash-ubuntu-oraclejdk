@@ -122,4 +122,3 @@ extract_sources
 update_profiled_envs
 update_alternatives
 
-exec /bin/bash

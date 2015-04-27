@@ -4,18 +4,18 @@ set -x
 
 # PROVIDED VARS
 
-GROOVY_LOCAL_DESTINATION=${GROOVY_LOCAL_DESTINATION-"/usr/groovy/src/"}
-TGZ_SOURCES_path=${TGZ_SOURCES_path-"https://bintray.com/artifact/download/groovy/maven/"}
-TGZ_SOURCES_filename=${TGZ_SOURCES_filename-"groovy-binary-2.4.3.zip"}
+GROOVY_LOCAL_DESTINATION=${GROOVY_LOCAL_DESTINATION-"/usr/groovy/src"}
+GROOVY_TGZ_SOURCES_path=${GROOVY_TGZ_SOURCES_path-"http://bintray.com/artifact/download/groovy/maven/"}
+GROOVY_TGZ_SOURCES_filename=${GROOVY_TGZ_SOURCES_filename-"groovy-binary-2.4.3.zip"}
 #GROOVYTGZ_EXPECTED_MD5="d41d8cd98f00b204e9800998ecf8427e"
 
 # derived values
-GROOVY_VERSION=$(echo $TGZ_SOURCES_filename | sed 's/\(groovy-binary-\)\(.*\)\.zip/\2/')
+GROOVY_VERSION=$(echo $GROOVY_TGZ_SOURCES_filename | sed 's/\(groovy-binary-\)\(.*\)\.zip/\2/')
 echo 'extracted jdk version : '$GROOVY_VERSION
 VERSION_DESTINATION=${GROOVY_LOCAL_DESTINATION}/$GROOVY_VERSION
-GROOVY_TGZ_FULL_LOCAL_PATH="${GROOVY_LOCAL_DESTINATION}/${TGZ_SOURCES_filename}"
-GROOVY_TGZ_FULL_REMOTE_PATH="${TGZ_SOURCES_path}/${TGZ_SOURCES_filename}"
-GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH="${GROOVY_LOCAL_DESTINATION}/${GROOVY_VERSION}"
+GROOVY_TGZ_FULL_LOCAL_PATH="${GROOVY_LOCAL_DESTINATION}/${GROOVY_TGZ_SOURCES_filename}"
+GROOVY_TGZ_FULL_REMOTE_PATH="${GROOVY_TGZ_SOURCES_path}/${GROOVY_TGZ_SOURCES_filename}"
+GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH="${GROOVY_LOCAL_DESTINATION}/groovy-${GROOVY_VERSION}"
 #JDK_EXTRACTEDSOURCES_FULL_LOCAL_TMP_PATH="${JDK_LOCAL_DESTINATION}/${JDK_VERSION}_tmp"
 
 export DOWNLOAD_ATTEMPT_COUNT=0
@@ -75,9 +75,14 @@ fi
 }
 
 extract_sources() {
-    mkdir -p $GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH
     echo 'extracting archive to : '$GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH
-    unzip $GROOVY_TGZ_FULL_LOCAL_PATH -d $GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH
+    #unzip $GROOVY_TGZ_FULL_LOCAL_PATH -d $GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH
+    unzip $GROOVY_TGZ_FULL_LOCAL_PATH -d "$GROOVY_LOCAL_DESTINATION"
+#    [ ! -d $GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH ] || {
+#    ls -lar $GROOVY_LOCAL_DESTINATION/*
+#    exitONFatalError '[FATAL] groovy destination directory already exists!' 4
+#    }
+#    mv "$GROOVY_LOCAL_DESTINATION/groovy-${GROOVY_VERSION}" $GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH
     #tar -xzvf $GROOVY_TGZ_FULL_LOCAL_PATH -C $GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH  --strip-components=1
 }
 
@@ -95,8 +100,8 @@ echo 'export PATH=$PATH:'$GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH'/bin' >> $dst_
 
 update_alternatives(){
 
-# for files that doesn't have a dot in the name
-for f in $(find "$GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH/bin" -type f -maxdepth 1 -regex "[^.]*")
+# for files that doesn't have a dot in the name (because the dirname contain dots , awk is used to parse a regexp only on filename )
+for f in $(find "$GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH/bin" -maxdepth 1 -type f | awk '$1 ~ "^.*/[a-zA-Z0-9]*$" {print $1} ')
 do
  filenameOnly=$(basename $f)
  echo "Processing $f -- $filenameOnly"
@@ -107,7 +112,7 @@ done
 }
 
 [ -d "$GROOVY_LOCAL_DESTINATION" ] || mkdir -p $GROOVY_LOCAL_DESTINATION
-[ -d "$GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH" ] || mkdir -p $GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH
+#[ -d "$GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH" ] || mkdir -p $GROOVY_EXTRACTEDSOURCES_FULL_LOCAL_PATH
 
 download_sources_if_necessary
 validate_sources

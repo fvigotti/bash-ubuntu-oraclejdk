@@ -4,13 +4,15 @@ set -x
 
 # --- PROVIDED VARS
 JDK_LOCAL_DESTINATION=${JDK_LOCAL_DESTINATION-"/usr/java/src/"}
+
 TGZ_SOURCES_path=${TGZ_SOURCES_path-"http://download.oracle.com/otn-pub/java/jdk/8u60-b27/"}
 TGZ_SOURCES_filename=${TGZ_SOURCES_filename-"jdk-8u60-linux-x64.tar.gz"}
 JDK_EXPECTED_MD5="b8ca513d4f439782c019cb78cd7fd101"
 
 # ---  derived values
-
+# extract "8u60" from jdk-8u60-linux-x64.tar.gz
 JDK_VERSION=$(echo $TGZ_SOURCES_filename | sed 's/\(jdk-\)\([^\-]*\)-\(.*\)/\2/')
+
 echo 'extracted jdk version : '$JDK_VERSION
 VERSION_DESTINATION=${JDK_LOCAL_DESTINATION}/$JDK_VERSION
 JDK_TGZ_FULL_LOCAL_PATH="${JDK_LOCAL_DESTINATION}/${TGZ_SOURCES_filename}"

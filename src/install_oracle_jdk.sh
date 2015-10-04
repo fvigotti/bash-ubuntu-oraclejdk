@@ -4,6 +4,7 @@ set -x
 
 # --- PROVIDED VARS
 JDK_LOCAL_DESTINATION=${JDK_LOCAL_DESTINATION-"/usr/java/src/"}
+OVERWRITE_DESTINATION=${OVERWRITE_DESTINATION-false}
 
 TGZ_SOURCES_path=${TGZ_SOURCES_path-"http://download.oracle.com/otn-pub/java/jdk/8u60-b27/"}
 TGZ_SOURCES_filename=${TGZ_SOURCES_filename-"jdk-8u60-linux-x64.tar.gz"}
@@ -23,6 +24,10 @@ JDK_EXTRACTEDSOURCES_FULL_LOCAL_PATH="${JDK_LOCAL_DESTINATION}/${JDK_VERSION}"
 export DOWNLOAD_ATTEMPT_COUNT=0
 
 
+[ -d "$JDK_EXTRACTEDSOURCES_FULL_LOCAL_PATH" ] && [ ! $OVERWRITE_DESTINATION ] && {
+    echo 'destination path ( '$JDK_EXTRACTEDSOURCES_FULL_LOCAL_PATH' ) already exists, please set OVERWRITE_DESTINATION=true , if you want to force overwrite '
+    exit 0;
+}
 
 echo 'VERSION_DESTINATION : '$VERSION_DESTINATION
 
@@ -86,6 +91,7 @@ extract_sources() {
 update_profiled_envs(){
 dst_csh="/etc/profile.d/jdk.csh"
 dst_sh="/etc/profile.d/jdk.sh"
+
 echo 'setenv J2SDKDIR '$JDK_EXTRACTEDSOURCES_FULL_LOCAL_PATH > $dst_csh
 echo 'setenv J2REDIR '$JDK_EXTRACTEDSOURCES_FULL_LOCAL_PATH'/jre' >> $dst_csh
 echo 'setenv PATH ${PATH}:'$JDK_EXTRACTEDSOURCES_FULL_LOCAL_PATH'/bin:'$JDK_EXTRACTEDSOURCES_FULL_LOCAL_PATH'/db/bin:'$JDK_EXTRACTEDSOURCES_FULL_LOCAL_PATH'/jre/bin' >> $dst_csh
